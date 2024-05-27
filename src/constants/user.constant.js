@@ -1,0 +1,4 @@
+export const ROLES = {
+  APPLICANT: 'APPLICANT',
+  RECRUITER: 'RECRUITER',
+};

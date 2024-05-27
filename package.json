@@ -4,20 +4,27 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node src/app.js",
+    "prisma:generate": "prisma generate",
+    "start": "npm run prisma:generate && node src/app.js",
     "dev": "nodemon src/app.js"
   },
   "repository": "https://github.com/mmomomoo/recruitment-site.git",
   "author": "mmomomoo <164153608+mmomomoo@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.14.0"
+    "mysql2": "^3.9.8"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
     "nodemon": "^3.1.1",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "prisma": "^5.14.0"
   }
 }

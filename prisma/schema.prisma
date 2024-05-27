@@ -1,0 +1,60 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  password   String
+  name       String
+  role       Role        @default(APPLICANT) // Role enum을 참조
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  resumes    Resume[]    // One-to-Many relation with Resume
+  logs       ResumeLog[] @relation("RecruiterLogs") // One-to-Many relation with ResumeLog as recruiter
+
+  @@map("Users")
+}
+enum Role { // Role enum 정의
+  APPLICANT
+  RECRUITER
+
+
+model Resume {
+  id          Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  title     String
+  content   String    @db.Text
+  status    status    
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([userId])
+  @@map("Resumes)
+}
+
+
+
+
+
+
+
+model ResumeLog {
+  id          Int       @id @default(autoincrement())
+  resumeId    Int
+  recruiterId Int
+  action      String
+  timestamp   DateTime  @default(now())
+  recruiter   User      @relation("RecruiterLogs", fields: [recruiterId], references: [id])
+  resume      Resume    @relation(fields: [resumeId], references: [id])
+
+  @@index([resumeId])
+  @@index([recruiterId])
+}
+
+}
