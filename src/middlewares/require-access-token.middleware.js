@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../constants/auth.constant.js';
+// import { JWT_SECRET_KEY } from '../constants/auth.constant.js';
 
 export const requireAccessToken = (req, res, next) => {
   const token =
