@@ -7,33 +7,107 @@ import {
   createResumeSchema,
   updateResumeSchema,
 } from '../schemas/resume.schema.js';
+import { prisma } from '../utils/prisma.util.js';
 
 const router = Router();
 
 router.use(requireAccessToken);
 
-router.get('/', (req, res) => {
-  // 이력서 목록 조회 로직 구현
+// 이력서 목록 조회
+router.get('/resumes', async (req, res, next) => {
+  try {
+    const resumes = await prisma.resume.findMany({
+      where: { userId: req.user.userId },
+    });
+    res.json(resumes);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get('/:id', (req, res) => {
-  // 이력서 상세 조회 로직 구현
+// 이력서 상세 조회
+router.get('/resumes/:id', async (req, res, next) => {
+  try {
+    const resume = await prisma.resume.findUnique({
+      where: { id: parseInt(req.params.id) },
+    });
+    if (!resume) {
+      return res.status(404).json({ message: '이력서를 찾을 수 없습니다.' });
+    }
+    res.json(resume);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/', validate(createResumeSchema), (req, res) => {
-  // 이력서 생성 로직 구현
+// 이력서 생성
+router.post(
+  '/resumes',
+  validate(createResumeSchema),
+  async (req, res, next) => {
+    try {
+      const { title, content, status } = req.body;
+      const resume = await prisma.resume.create({
+        data: {
+          title,
+          content,
+          status,
+          userId: req.user.userId,
+        },
+      });
+      res.status(201).json(resume);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// 이력서 수정
+router.patch(
+  '/resumes/:id',
+  validate(updateResumeSchema),
+  async (req, res, next) => {
+    try {
+      const { title, content, status } = req.body;
+      const resume = await prisma.resume.update({
+        where: { id: parseInt(req.params.id) },
+        data: { title, content, status },
+      });
+      res.json(resume);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// 이력서 삭제
+router.delete('/resumes/:id', async (req, res, next) => {
+  try {
+    await prisma.resume.delete({
+      where: { id: parseInt(req.params.id) },
+    });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.patch('/:id', validate(updateResumeSchema), (req, res) => {
-  // 이력서 수정 로직 구현
-});
-
-router.delete('/:id', (req, res) => {
-  // 이력서 삭제 로직 구현
-});
-
-router.patch('/:id/status', requireRoles([ROLES.RECRUITER]), (req, res) => {
-  // 이력서 상태 변경 로직 구현
-});
+// 이력서 상태 변경
+router.patch(
+  '/resumes/:id/status',
+  requireRoles([ROLES.RECRUITER]),
+  async (req, res, next) => {
+    try {
+      const { status } = req.body;
+      const resume = await prisma.resume.update({
+        where: { id: parseInt(req.params.id) },
+        data: { status },
+      });
+      res.json(resume);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 export default router;
