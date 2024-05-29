@@ -118,13 +118,6 @@ router.post('/auth/sign-in', async (req, res, next) => {
         .status(401)
         .json({ success: false, message: '비밀번호가 틀렸습니다.' });
     }
-    // JWT 토큰 생성
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      secretKey,
-      { expiresIn: '1h' }, // 1시간 후 만료
-    );
-
     // 로그인 성공 응답
 
     return res.status(200).json({

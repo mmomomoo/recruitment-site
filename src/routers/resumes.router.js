@@ -1,15 +1,26 @@
-import { Router } from 'express';
+import express from 'express';
 import { requireAccessToken } from '../middlewares/require-access-token.middleware.js';
 import { requireRoles } from '../middlewares/require-roles.middleware.js';
 import { ROLES } from '../constants/user.constant.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import {
-  createResumeSchema,
-  updateResumeSchema,
-} from '../schemas/resume.schema.js';
 import { prisma } from '../utils/prisma.util.js';
+import Joi from 'joi';
 
-const router = Router();
+const router = express.Router();
+
+// 이력서 생성 스키마
+const createResumeSchema = Joi.object({
+  title: Joi.string().required(),
+  content: Joi.string().required(),
+  status: Joi.string().valid('draft', 'published').required(),
+});
+
+// 이력서 수정 스키마
+const updateResumeSchema = Joi.object({
+  title: Joi.string(),
+  content: Joi.string(),
+  status: Joi.string().valid('draft', 'published'),
+});
 
 router.use(requireAccessToken);
 
@@ -31,7 +42,7 @@ router.get('/resumes/:id', async (req, res, next) => {
     const resume = await prisma.resume.findUnique({
       where: { id: parseInt(req.params.id) },
     });
-    if (!resume) {
+    if (!resume || resume.userId !== req.user.userId) {
       return res.status(404).json({ message: '이력서를 찾을 수 없습니다.' });
     }
     res.json(resume);
@@ -83,6 +94,13 @@ router.patch(
 // 이력서 삭제
 router.delete('/resumes/:id', async (req, res, next) => {
   try {
+    const resume = await prisma.resume.findUnique({
+      where: { id: parseInt(req.params.id) },
+    });
+    if (!resume || resume.userId !== req.user.userId) {
+      return res.status(404).json({ message: '이력서를 찾을 수 없습니다.' });
+    }
+
     await prisma.resume.delete({
       where: { id: parseInt(req.params.id) },
     });
